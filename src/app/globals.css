@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
-/* Мапимо змінні для Tailwind v4 */
+@custom-variant dark (&:is(.dark *));
+
 @theme {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -23,7 +23,11 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  --radius-md: var(--radius);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 :root {
@@ -72,6 +76,15 @@
   --radius: 0.3rem;
 }
 
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
 * {
   font-family: 'Montserrat', sans-serif !important;
   font-weight: 500;
@@ -80,13 +93,6 @@
 .home-parent {
   min-height: 100vh;
   background-image: linear-gradient(to right, #434343 0%, black 100%);
-}
-
-* {
-  @apply border-border outline-ring/50;
-}
-body {
-  @apply bg-background text-foreground;
 }
 
 .cl-cardBox {
