@@ -1,0 +1,113 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Мапимо змінні для Tailwind v4 */
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius-md: var(--radius);
+}
+
+:root {
+  --background: 143 0% 100%;
+  --foreground: 143 0% 10%;
+  --card: 143 0% 100%;
+  --card-foreground: 143 0% 15%;
+  --popover: 143 0% 100%;
+  --popover-foreground: 143 95% 10%;
+  --primary: 143 0% 0%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 143 10% 90%;
+  --secondary-foreground: 0 0% 0%;
+  --muted: 105 10% 95%;
+  --muted-foreground: 143 0% 40%;
+  --accent: 105 10% 90%;
+  --accent-foreground: 143 0% 15%;
+  --destructive: 0 50% 50%;
+  --destructive-foreground: 143 0% 100%;
+  --border: 143 20% 82%;
+  --input: 143 20% 50%;
+  --ring: 143 0% 0%;
+  --radius: 0.3rem;
+}
+
+.dark {
+  --background: 143 10% 10%;
+  --foreground: 143 0% 100%;
+  --card: 143 0% 10%;
+  --card-foreground: 143 0% 100%;
+  --popover: 143 10% 5%;
+  --popover-foreground: 143 0% 100%;
+  --primary: 143 0% 0%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 143 10% 20%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 105 10% 25%;
+  --muted-foreground: 143 0% 65%;
+  --accent: 105 10% 25%;
+  --accent-foreground: 143 0% 95%;
+  --destructive: 0 50% 50%;
+  --destructive-foreground: 143 0% 100%;
+  --border: 143 20% 50%;
+  --input: 143 20% 50%;
+  --ring: 143 0% 0%;
+  --radius: 0.3rem;
+}
+
+* {
+  font-family: 'Montserrat', sans-serif !important;
+  font-weight: 500;
+}
+
+.home-parent {
+  min-height: 100vh;
+  background-image: linear-gradient(to right, #434343 0%, black 100%);
+}
+
+* {
+  @apply border-border outline-ring/50;
+}
+body {
+  @apply bg-background text-foreground;
+}
+
+.cl-cardBox {
+  box-shadow: none;
+}
+
+.auth-parent input {
+  height: 40px !important;
+  border: 1px solid #828282 !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+
+.cl-formButtonPrimary {
+  height: 40px !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+  background-color: black !important;
+}
+
+table {
+  margin-top: 20px !important;
+  border: 1px solid #828282 !important;
+}
