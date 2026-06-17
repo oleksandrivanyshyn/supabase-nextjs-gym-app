@@ -1,8 +1,23 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { ArrowDownToLine } from 'lucide-react';
-
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { useState } from 'react';
+import { SignIn, SignUp } from '@clerk/nextjs';
+import { useSearchParams } from 'next/navigation';
 export default function Home() {
+  const [openSheet, setOpenSheet] = useState(false);
+  const queryStrings = useSearchParams();
+  const form = queryStrings.get('form');
   return (
     <div className="home-parent dark py-10 px-20 text-foreground">
       <div className="flex justify-between items-center">
@@ -12,6 +27,7 @@ export default function Home() {
         <Button
           variant="outline"
           className="border-border text-white hover:bg-white hover:text-black transition-colors"
+          onClick={() => setOpenSheet(true)}
         >
           Sign-in
         </Button>
@@ -40,6 +56,27 @@ export default function Home() {
           className="animate-bounce cursor-pointer mt-16 text-muted-foreground hover:text-white transition-colors"
         />
       </div>
+      <Sheet open={openSheet} onOpenChange={setOpenSheet}>
+        <SheetContent className="lg:min-w-[500px] flex items-center justify-center min-h-screen auth-parent">
+          <SheetHeader>
+            <SheetTitle></SheetTitle>
+          </SheetHeader>
+
+          {form === 'sign-up' ? (
+            <SignUp
+              routing="hash"
+              signInUrl="/?form=sign-in"
+              fallbackRedirectUrl={'/account'}
+            />
+          ) : (
+            <SignIn
+              routing="hash"
+              signUpUrl="/?form=sign-up"
+              fallbackRedirectUrl={'/account'}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
