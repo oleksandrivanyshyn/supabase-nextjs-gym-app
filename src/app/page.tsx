@@ -14,6 +14,7 @@ import {
 import { useState } from 'react';
 import { SignIn, SignUp } from '@clerk/nextjs';
 import { useSearchParams } from 'next/navigation';
+import PlansList from '@/app/_components/plans-list';
 export default function Home() {
   const [openSheet, setOpenSheet] = useState(false);
   const queryStrings = useSearchParams();
@@ -47,6 +48,10 @@ export default function Home() {
         <Button
           variant="outline"
           className="mt-2 border-border text-white hover:bg-white hover:text-black transition-colors"
+          onClick={() => {
+            const plansDiv = document.getElementById('plans');
+            plansDiv?.scrollIntoView({ behavior: 'smooth' });
+          }}
         >
           Explore Plans
         </Button>
@@ -55,6 +60,12 @@ export default function Home() {
           size={24}
           className="animate-bounce cursor-pointer mt-16 text-muted-foreground hover:text-white transition-colors"
         />
+      </div>
+      <div id="plans">
+        <h1 className="text-2xl font-bold text-center text-white mt-20">
+          Our Plans
+        </h1>
+        <PlansList />
       </div>
       <Sheet open={openSheet} onOpenChange={setOpenSheet}>
         <SheetContent className="lg:min-w-[500px] flex items-center justify-center min-h-screen auth-parent">
