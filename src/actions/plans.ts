@@ -1,3 +1,4 @@
+'use server';
 import supabase from '@/config/supabase-config';
 import { revalidatePath } from 'next/cache';
 

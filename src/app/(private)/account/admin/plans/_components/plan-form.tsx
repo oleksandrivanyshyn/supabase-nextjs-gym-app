@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState } from 'react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,33 +26,34 @@ interface PlanFormProps {
   initialValues?: any;
 }
 
-function PlanForm({ formType, initialValues }: PlanFormProps) {
-  const [loading = false, setLoading] = useState<boolean>();
+function PlanForm({ formType = 'add', initialValues }: PlanFormProps) {
+  const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
-  const [selectedMediaFiles = [], setSelectedMediaFiles] = useState<any[]>([]);
+  const [selectedMediaFiles, setSelectedMediaFiles] = useState<any[]>([]);
   const [existingMediaUrls, setExistingMediaUrls] = useState<string[]>(
     initialValues?.images || [],
   );
+
   const formSchema = z.object({
     name: z.string().nonempty('Name is required'),
     description: z.string().nonempty('Description is required'),
     features: z.array(z.string()).nonempty('Features is required'),
-    monthly_price: z.number(),
-    quarterly_price: z.number(),
-    half_yearly_price: z.number(),
-    yearly_price: z.number(),
+    monthly_price: z.union([z.number(), z.string()]),
+    quarterly_price: z.union([z.number(), z.string()]),
+    half_yearly_price: z.union([z.number(), z.string()]),
+    yearly_price: z.union([z.number(), z.string()]),
   });
 
-  const form: any = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialValues?.name || '',
       description: initialValues?.description || '',
-      features: initialValues?.features || [],
-      monthly_price: initialValues?.monthly_price || 0,
-      quarterly_price: initialValues?.quarterly_price || 0,
-      half_yearly_price: initialValues?.half_yearly_price || 0,
-      yearly_price: initialValues?.yearly_price || 0,
+      features: initialValues?.features || [''],
+      monthly_price: initialValues?.monthly_price ?? 0,
+      quarterly_price: initialValues?.quarterly_price ?? 0,
+      half_yearly_price: initialValues?.half_yearly_price ?? 0,
+      yearly_price: initialValues?.yearly_price ?? 0,
     },
   });
 
@@ -59,7 +61,6 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
     try {
       setLoading(true);
 
-      // save the selectedMediaFiles to the supabase storage and get the urls
       let newMediaUrls = [];
       for (let file of selectedMediaFiles) {
         const response = await uploadFileAndGetUrl(file);
@@ -69,15 +70,33 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
         newMediaUrls.push(response.data);
       }
 
-      values.images = newMediaUrls;
+      const formattedValues = {
+        ...values,
+        monthly_price:
+          values.monthly_price === '' ? 0 : parseFloat(values.monthly_price),
+        quarterly_price:
+          values.quarterly_price === ''
+            ? 0
+            : parseFloat(values.quarterly_price),
+        half_yearly_price:
+          values.half_yearly_price === ''
+            ? 0
+            : parseFloat(values.half_yearly_price),
+        yearly_price:
+          values.yearly_price === '' ? 0 : parseFloat(values.yearly_price),
+      };
 
-      // based on the formType, call the appropriate server action (addNewPlan or editPlanById)
+      if (formType === 'add') {
+        formattedValues.images = newMediaUrls;
+      } else {
+        formattedValues.images = [...existingMediaUrls, ...newMediaUrls];
+      }
+
       let response = null;
       if (formType === 'add') {
-        response = await addNewPlan(values);
+        response = await addNewPlan(formattedValues);
       } else {
-        values.images = [...values.images, ...existingMediaUrls];
-        response = await editPlanById(initialValues.id, values);
+        response = await editPlanById(initialValues.id, formattedValues);
       }
 
       if (response.success) {
@@ -86,8 +105,8 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
       } else {
         toast.error(response.message);
       }
-    } catch (error) {
-      toast.error('Something went wrong');
+    } catch (error: any) {
+      toast.error(error?.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -96,7 +115,7 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
   const { fields, remove, append } = useFieldArray({
     control: form.control,
     name: 'features',
-  });
+  } as any);
 
   const pricingFields = [
     'monthly_price',
@@ -128,7 +147,7 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="" {...field} />
+                  <Input placeholder="Enter plan name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -142,7 +161,7 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="" {...field} />
+                  <Textarea placeholder="Enter description" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -161,7 +180,7 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
                   render={({ field }) => (
                     <FormItem className="flex items-center gap-5">
                       <FormControl>
-                        <Input placeholder="" {...field} />
+                        <Input placeholder="Feature description" {...field} />
                       </FormControl>
                       <Button
                         type="button"
@@ -191,22 +210,28 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
             <legend className="bg-white px-5 text-sm">Pricing</legend>
 
             <div className="grid grid-cols-4 gap-5">
-              {pricingFields.map((item, index) => (
+              {pricingFields.map((item) => (
                 <FormField
                   control={form.control}
-                  name={item}
+                  name={item as any}
                   key={item}
-                  render={({ field }: { field: any }) => (
+                  render={({ field }) => (
                     <FormItem>
-                      <label className="text-xs">
+                      <label className="text-xs font-semibold block mb-1">
                         {item.replace('_', ' ').toUpperCase()}
                       </label>
                       <FormControl>
                         <Input
-                          placeholder=""
-                          {...field}
+                          type="number"
+                          placeholder="0"
+                          value={
+                            field.value === 0 || Number.isNaN(field.value)
+                              ? ''
+                              : field.value
+                          }
                           onChange={(e) => {
-                            field.onChange(parseFloat(e.target.value));
+                            const val = e.target.value;
+                            field.onChange(val === '' ? '' : parseFloat(val));
                           }}
                         />
                       </FormControl>
@@ -223,23 +248,30 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
             <Input
               type="file"
               multiple
+              accept="image/*"
               onChange={(e: any) => {
-                setSelectedMediaFiles([
-                  ...selectedMediaFiles,
-                  ...e.target.files,
-                ]);
+                if (e.target.files) {
+                  setSelectedMediaFiles([
+                    ...selectedMediaFiles,
+                    ...Array.from(e.target.files),
+                  ]);
+                }
               }}
             />
 
             <div className="flex flex-wrap gap-5">
               {existingMediaUrls.map((url, index) => (
                 <div
-                  className="border p-2 rounded border-gray-300 flex items-center justify-center flex-col"
-                  key={index}
+                  className="border p-2 rounded border-gray-300 flex items-center justify-center flex-col relative"
+                  key={`existing-${index}`}
                 >
-                  <img src={url} className="w-20 h-20 object-contain" />
+                  <img
+                    src={url}
+                    className="w-20 h-20 object-contain"
+                    alt="Existing pricing plan"
+                  />
                   <span
-                    className="text-gray-500 text-xs cursor-pointer underline text-center w-full"
+                    className="text-red-500 text-xs cursor-pointer mountaineer underline text-center w-full mt-1"
                     onClick={() => onExistingMediaUrlsRemove(index)}
                   >
                     Remove
@@ -248,15 +280,16 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
               ))}
               {selectedMediaFiles.map((file, index) => (
                 <div
-                  className="border p-2 rounded border-gray-300 flex items-center justify-center flex-col"
-                  key={index}
+                  className="border p-2 rounded border-gray-300 flex items-center justify-center flex-col relative"
+                  key={`selected-${index}`}
                 >
                   <img
                     src={URL.createObjectURL(file)}
                     className="w-20 h-20 object-contain"
+                    alt="Selected premium plan"
                   />
                   <span
-                    className="text-gray-500 text-xs cursor-pointer underline text-center w-full"
+                    className="text-red-500 text-xs cursor-pointer underline text-center w-full mt-1"
                     onClick={() => onSelectedMediaFilesRemove(index)}
                   >
                     Remove
@@ -275,7 +308,7 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
               Cancel
             </Button>
             <Button disabled={loading} type="submit">
-              Submit
+              {loading ? 'Submitting...' : 'Submit'}
             </Button>
           </div>
         </form>
