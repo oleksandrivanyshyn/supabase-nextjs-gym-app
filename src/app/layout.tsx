@@ -8,6 +8,7 @@ import {
   SignUpButton,
   UserButton,
 } from '@clerk/nextjs';
+import CustomLayout from '@/custom-layout';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,7 +36,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ClerkProvider>{children}</ClerkProvider>
+        <ClerkProvider>
+          <CustomLayout>{children}</CustomLayout>
+        </ClerkProvider>
       </body>
     </html>
   );

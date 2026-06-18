@@ -5,7 +5,6 @@ import { getCurrentUserFromSupabase } from '@/actions/users';
 
 const AccountPage = async () => {
   const result = await currentUser();
-  console.log(result);
   const name = result?.firstName + ' ' + result?.lastName;
   const clerkUserId = result?.id;
   const email = result?.emailAddresses[0].emailAddress;
