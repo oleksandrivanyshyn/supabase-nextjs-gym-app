@@ -8,6 +8,8 @@ import {
 } from '@/global-store/plans-store';
 import dayjs from 'dayjs';
 import React, { useMemo } from 'react';
+import toast from 'react-hot-toast';
+import { getStripePaymentIntent } from '@/actions/payments';
 
 function ChecoutPage() {
   const { selectedPaymentPlan, setSelectedPaymentPlan } =
@@ -15,6 +17,9 @@ function ChecoutPage() {
   const [startDate, setStartDate] = React.useState(
     dayjs().format('YYYY-MM-DD'),
   );
+  const [loading, setLoading] = React.useState(false);
+  const [clientSecret, setClientSecret] = React.useState<string | null>(null);
+  const [showCheckoutForm, setShowCheckoutForm] = React.useState(false);
 
   const renderProperty = (key: string, value: any) => {
     try {
@@ -33,6 +38,24 @@ function ChecoutPage() {
       .add(selectedPaymentPlan?.paymentPlan?.duration, 'day')
       .format('YYYY-MM-DD');
   }, [startDate]);
+  const paymentIntentHandler = async () => {
+    try {
+      setLoading(true);
+      const response = await getStripePaymentIntent(
+        selectedPaymentPlan?.paymentPlan?.price,
+      );
+      if (response.success) {
+        setClientSecret(response.data);
+        setShowCheckoutForm(true);
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      toast.error('Payment Failed');
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div>
       <PageTitle title="Checkout" />
@@ -59,7 +82,13 @@ function ChecoutPage() {
 
             {startDate && renderProperty('End Date', endDate)}
 
-            <Button className="mt-7">Pay Now</Button>
+            <Button
+              className="mt-7"
+              onClick={paymentIntentHandler}
+              disabled={loading}
+            >
+              Pay Now
+            </Button>
           </div>
         </div>
       )}
