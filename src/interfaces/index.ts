@@ -6,6 +6,7 @@ export interface IUser {
   created_at: string;
   is_admin: boolean;
   is_active: boolean;
+  is_customer: boolean;
 }
 export interface IPlan {
   id: string;
