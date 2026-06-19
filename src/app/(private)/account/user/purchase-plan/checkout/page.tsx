@@ -1,4 +1,5 @@
 'use client';
+import { getStripePaymentIntent } from '@/actions/payments';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import PageTitle from '@/components/ui/page-title';
@@ -9,7 +10,18 @@ import {
 import dayjs from 'dayjs';
 import React, { useMemo } from 'react';
 import toast from 'react-hot-toast';
-import { getStripePaymentIntent } from '@/actions/payments';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import CheckoutForm from './_components/checkout-form';
+import usersGlobalStore, {
+  IUsersGlobalStore,
+} from '@/global-store/users-store';
+import { createNewSubscription } from '@/actions/subscriptions';
+import { useRouter } from 'next/navigation';
+
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
+);
 
 function ChecoutPage() {
   const { selectedPaymentPlan, setSelectedPaymentPlan } =
@@ -20,6 +32,8 @@ function ChecoutPage() {
   const [loading, setLoading] = React.useState(false);
   const [clientSecret, setClientSecret] = React.useState<string | null>(null);
   const [showCheckoutForm, setShowCheckoutForm] = React.useState(false);
+  const { user } = usersGlobalStore() as IUsersGlobalStore;
+  const router = useRouter();
 
   const renderProperty = (key: string, value: any) => {
     try {
@@ -33,11 +47,13 @@ function ChecoutPage() {
       return <></>;
     }
   };
+
   const endDate = useMemo(() => {
     return dayjs(startDate)
       .add(selectedPaymentPlan?.paymentPlan?.duration, 'day')
       .format('YYYY-MM-DD');
   }, [startDate]);
+
   const paymentIntentHandler = async () => {
     try {
       setLoading(true);
@@ -56,9 +72,42 @@ function ChecoutPage() {
       setLoading(false);
     }
   };
+
+  const options = {
+    // passing the client secret obtained from the server
+    clientSecret: clientSecret!,
+  };
+
+  const onPaymentSuccess = async (paymentId: string) => {
+    try {
+      const payload = {
+        user_id: user?.id,
+        plan_id: selectedPaymentPlan?.mainPlan?.id,
+        start_date: startDate,
+        end_date: endDate,
+        payment_id: paymentId,
+        amount: Number(selectedPaymentPlan?.paymentPlan?.price),
+        total_duration: Number(selectedPaymentPlan?.paymentPlan?.duration),
+        is_active: true,
+      };
+      const response = await createNewSubscription(payload);
+      if (response.success) {
+        toast.success(
+          'Congratulations! Your payment was successful , Your subscription has been activated',
+        );
+        router.push('/account/user/subscriptions');
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      toast.error('An error occurred while processing your payment');
+    }
+  };
+
   return (
     <div>
       <PageTitle title="Checkout" />
+
       {selectedPaymentPlan && (
         <div className="grid grid-cols-2 mt-7">
           <div className="col-span-1 p-5 border border-gray-500 flex flex-col gap-2 rounded-lg">
@@ -97,6 +146,16 @@ function ChecoutPage() {
         <div className="mt-5 text-sm">
           <p>Please select a payment plan</p>
         </div>
+      )}
+
+      {showCheckoutForm && clientSecret && (
+        <Elements stripe={stripePromise} options={options}>
+          <CheckoutForm
+            showCheckoutForm={showCheckoutForm}
+            setShowCheckoutForm={setShowCheckoutForm}
+            onPaymentSuccess={onPaymentSuccess}
+          />
+        </Elements>
       )}
     </div>
   );
