@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Supabase Next.js Gym App
+
+A full-stack fitness center application built with Next.js 15 and Supabase. The project implements a management system for subscription plans, user memberships, and payment processing.
+
+## Features
+
+- **Next.js 15 & Server Actions**: All database interaction, payment processing, and subscription management logic is handled via server actions.
+- **Supabase (PostgreSQL)**: Utilizes Supabase as a backend service for data storage and relational database management.
+- **Role-Based Access Control**: Separated access for public and private routes, featuring an admin panel for managing subscription plans.
+- **Client-Side State Management**: Uses Zustand for clean and lightweight management of global state for plans and users.
+- **Modern UI**: The interface is built using Tailwind CSS and Shadcn UI components.
+
+## Tech Stack
+
+- **Frontend**: React, Next.js 15 (App Router), Tailwind CSS, Shadcn UI
+- **Backend Services**: Supabase (PostgreSQL), Server Actions
+- **State Manager**: Zustand
+
+## Project Structure
+
+- `/src/app` — Application routing (including private zones for clients and admins)
+- `/src/actions` — Server actions for plans, subscriptions, and payments
+- `/src/global-store` — Zustand global stores
+- `/src/components/ui` — Reusable UI components
+- `/src/config` — Supabase client configuration
 
 ## Getting Started
 
-First, run the development server:
-
+1. Clone the repository.
+2. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+   npm install
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Create a `.env` file and add your environment variables(look into .env.example for variable to have).
+4. Run the development server:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+   npm run dev
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
