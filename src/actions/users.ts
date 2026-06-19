@@ -2,66 +2,95 @@
 
 import supabase from '@/config/supabase-config';
 import { currentUser } from '@clerk/nextjs/server';
-import { IUser } from '@/interfaces';
 
 export const getCurrentUserFromSupabase = async () => {
   try {
+    // if the clerk user is present in the supabase database, then return the user , else create a new user and return the user
     const clerkUser = await currentUser();
 
-    if (!clerkUser) {
-      return {
-        success: false,
-        error: 'User is not authenticated in Clerk',
-      };
-    }
-
-    const { data: existingUser, error } = await supabase
+    const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
-      .eq('clerk_user_id', clerkUser.id)
-      .maybeSingle();
+      .eq('clerk_user_id', clerkUser?.id);
 
     if (error) {
       throw error;
     }
-
-    if (existingUser) {
+    if (data && data.length) {
       return {
         success: true,
-        data: existingUser as IUser,
+        data: data[0],
       };
     }
 
-    const firstName = clerkUser.firstName || '';
-    const lastName = clerkUser.lastName || '';
-    const fullName = `${firstName} ${lastName}`.trim() || 'Anonymous';
-
+    // create a new user in the supabase database
     const newUserObj = {
-      clerk_user_id: clerkUser.id,
-      email: clerkUser.emailAddresses[0]?.emailAddress || '',
-      name: fullName,
+      clerk_user_id: clerkUser?.id,
+      email: clerkUser?.emailAddresses[0].emailAddress,
+      name: clerkUser?.firstName + ' ' + clerkUser?.lastName,
       is_active: true,
       is_admin: false,
     };
 
     const { data: newUser, error: newUserError } = await supabase
       .from('user_profiles')
-      .insert(newUserObj)
-      .select('*')
-      .single();
-
+      .insert([newUserObj])
+      .select('*');
     if (newUserError) {
       throw newUserError;
     }
 
     return {
       success: true,
-      data: newUser as IUser,
+      data: newUser[0],
+    };
+
+    throw new Error('User not found');
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
+export const getAllUsers = async () => {
+  try {
+    const { data, error } = await supabase.from('user_profiles').select('*');
+    if (error) {
+      throw error;
+    }
+
+    return {
+      success: true,
+      data,
     };
   } catch (error: any) {
     return {
       success: false,
-      error: error?.message || 'Failed to fetch user from Supabase',
+      message: error.message,
+    };
+  }
+};
+
+export const getAllCustomers = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('is_customer', true);
+    if (error) {
+      throw error;
+    }
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message,
     };
   }
 };
