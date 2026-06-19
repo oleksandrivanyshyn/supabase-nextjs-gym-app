@@ -7,6 +7,7 @@ import usersGlobalStore, {
 import dayjs from 'dayjs';
 import Link from 'next/link';
 import React from 'react';
+import AdminDashboard from './_components/admin-dashboard';
 
 function AccountPage() {
   const { user, currentSubscription } = usersGlobalStore() as IUsersGlobalStore;
@@ -18,11 +19,14 @@ function AccountPage() {
     </div>
   );
 
+  if (user?.is_admin) {
+    return <AdminDashboard />;
+  }
+
   return (
     <div>
       <PageTitle title={`Welcome ${user?.name}`} />
 
-      {/* this message will be dynamic in the next sections */}
       {!currentSubscription && (
         <div className="flex flex-col gap-5">
           <p className="mt-5 text-sm text-gray-600">
